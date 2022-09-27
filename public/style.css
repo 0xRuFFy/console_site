@@ -180,6 +180,10 @@ body {
     color: var(--host-color);
 }
 
+.console-body .line .at {
+    color: var(--console-maximize-color-hover);
+}
+
 .console .console-input {
     position: absolute;
     top: -99999px;

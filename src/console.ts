@@ -1,4 +1,4 @@
-const PROMPT = `@<span class="host">${window.location.hostname}</span> ~# > `;
+const PROMPT = `<span class="at">@</span><span class="host">${window.location.hostname}</span> ~# > `;
 const CONSOLE = document.querySelector(".app .console")!;
 const CONSOLE_INPUT = document.querySelector(".console-input input")! as HTMLInputElement;
 const CONSOLE_BODY = document.querySelector(".app .console .console-body")!;
@@ -103,8 +103,10 @@ const setSuggestion = (input: string): void => {
 
 const autoComplete = (input: string, force: boolean = false): string => {
     let matches = COMMANDS.filter(cmd => cmd.startsWith(input));
-    if (matches.length === 1 || (matches.length > 1 && force)) {
+    if (matches.length === 1) {
         return matches[0];
+    } else if (matches.length > 1 && force) {
+        return matches.reduce((a, b) => a.length <= b.length ? a : b);
     }
     return input;
 }
