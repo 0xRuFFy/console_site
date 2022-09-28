@@ -184,6 +184,36 @@ body {
     color: var(--console-maximize-color-hover);
 }
 
+.console-body .line .line-content {
+    position: relative;
+}
+
+.console-body .line .line-content .caret {
+    display: none;
+}
+
+.console-body .line.current .line-content {
+    position: relative;
+}
+
+.console-body .line.current .line-content .caret {
+    display: inline;
+    position: absolute;
+    animation: blink .9s infinite;
+}
+
+@keyframes blink {
+    0% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
 .console .console-input {
     position: absolute;
     top: -99999px;
