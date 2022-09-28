@@ -1,4 +1,6 @@
-const PROMPT = `<span class="at">@</span><span class="host">${window.location.hostname}</span> ~# > `;
+const PROMPT = `<span class="at">@</span><span class="host">${window.location.hostname}</span> ~# >&nbsp;`;
+const CARET = "_"
+const SPACE = "&nbsp;"
 const CONSOLE = document.querySelector(".app .console")!;
 const CONSOLE_INPUT = document.querySelector(".console-input input")! as HTMLInputElement;
 const CONSOLE_BODY = document.querySelector(".app .console .console-body")!;
@@ -15,6 +17,14 @@ const COMMANDS: string[] = [
 let lines: HTMLElement[] = [];
 let inputs: string[] = [];
 let currentInput = inputs.length - 1;
+
+const padLeftHTMLString = (s: string, n: number): string => {
+    return SPACE.repeat(n) + s
+}
+
+const getTrueCaretLength = (caret: Element): number => {
+    return (caret.innerHTML.length - CARET.length) / SPACE.length
+}
 
 const newLine = (text: string, className: string = ""): void => {
     let line = document.createElement("div");
@@ -36,9 +46,23 @@ const newLine = (text: string, className: string = ""): void => {
     line.appendChild(lineContent);
 
     if (className !== "") {
+        let prompt = document.createElement("span");
+        prompt.classList.add("prompt");
+        prompt.innerHTML = PROMPT;
+        lineContent.appendChild(prompt);
+
+        let caret = document.createElement("span");
+        caret.classList.add("caret")
+        caret.innerHTML = CARET
+        lineContent.appendChild(caret)
+
+        let text = document.createElement("span");
+        text.classList.add("line-input-text");
+        lineContent.appendChild(text);
+
         let suggestion = document.createElement("span");
         suggestion.classList.add("suggestion");
-        line.appendChild(suggestion);
+        lineContent.appendChild(suggestion);
     }
 
     if (lines.length > 0) {
@@ -77,7 +101,7 @@ const editLastLine = (input: string): void => {
     if (COMMANDS.includes(input.trim())) {
         input = `<span class="cmd">${input}</span>`
     }
-    lines[lines.length-1].querySelector(".line-content")!.innerHTML = `${PROMPT}${input}`;
+    lines[lines.length-1].querySelector(".line-content .line-input-text")!.innerHTML = input;
 }
 
 const addInput = (input: string): void => {
@@ -112,7 +136,6 @@ const autoComplete = (input: string, force: boolean = false): string => {
 }
 
 const inputHandler = (input: string): void => {
-    console.log(input);
     switch (input) {
         case "help":
             newLines([
@@ -120,19 +143,19 @@ const inputHandler = (input: string): void => {
                 ["clear | cls - clear the console"],
                 ["whoami - show information about the user"],
                 ["about - show information about the creator"],
-                [PROMPT, "input-line"],
+                ["", "input-line"],
             ]);
             break;
         case "clear":
         case "cls":
             CONSOLE_BODY.innerHTML = "";
             lines = [];
-            newLine(PROMPT, "input-line");
+            newLine("", "input-line");
             break;
         default:
             newLines([
                 [`Unknown command: ${input}`],
-                [PROMPT, "input-line"],
+                ["", "input-line"],
             ]);
             break;
     }
@@ -188,16 +211,34 @@ CONSOLE_INPUT.addEventListener("keydown", (event: KeyboardEvent) => {
     setSuggestion(CONSOLE_INPUT.value);
 }, false);
 
+CONSOLE_INPUT.addEventListener("keyup", (event: Event) => {
+    lines[lines.length-1].querySelector(".caret")!.innerHTML = padLeftHTMLString(CARET, CONSOLE_INPUT.selectionStart!)
+})
+
 CONSOLE_INPUT.addEventListener("input" , (event: Event) => {
     editLastLine(CONSOLE_INPUT.value);
     setSuggestion(CONSOLE_INPUT.value);
+    lines[lines.length-1].querySelector(".caret")!.innerHTML = padLeftHTMLString(CARET, CONSOLE_INPUT.selectionStart!)
 });
+
+CONSOLE_INPUT.onblur = () => {
+    let caret = document.querySelector(".console-body .line.current .line-content .caret") as HTMLElement
+    if (caret != undefined) {
+        caret.style.display = "none"
+    }
+}
+
+CONSOLE_INPUT.onfocus = () => {
+    let caret = document.querySelector(".console-body .line.current .line-content .caret") as HTMLElement
+    if (caret != undefined) {
+        caret.style.display = "inline"
+    }
+}
 
 newLines([
     ["Welcome to the console!"],
-    ["This is a console."],
     ["Type 'help' to see a list of commands."],
-    [PROMPT, "input-line"]
+    ["", "input-line"]
 ]);
 
 focusInput();
